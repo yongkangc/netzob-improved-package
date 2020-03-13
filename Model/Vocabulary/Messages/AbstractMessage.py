@@ -224,9 +224,9 @@ class AbstractMessage(SortableObject):
                 try:    
                     messageStr += chr(byte)
                 
+                # To print each message from symbol object.
                 except TypeError:
                     messageStr += byte
-
                 
         return messageStr
 
