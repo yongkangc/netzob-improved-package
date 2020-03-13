@@ -220,8 +220,14 @@ class AbstractMessage(SortableObject):
         messageStr = ""
         for result in functionTable.getResult():
             for byte in result:
-                messageStr += chr(byte)
+                # Added Try/Except to catch Type Error to print message.
+                try:    
+                    messageStr += chr(byte)
+                
+                except TypeError:
+                    messageStr += byte
 
+                
         return messageStr
 
     @property
@@ -339,12 +345,28 @@ class AbstractMessage(SortableObject):
 
         return self.__messageType
 
+    # @messageType.setter
+    # @typeCheck(str)
+    # def messageType(self, messageType):
+    #     if messageType is None:
+    #         raise TypeError("Message type cannot be None")
+    #     self.__messageType = messageType
+
+    # @property
+    # def l4messageType(self):
+    #     """The type of the message (e.g. network, file, ...)
+
+    #     :type: :class:`str`
+    #     """
+
+    #     return self.__l4messageType
+
     @messageType.setter
     @typeCheck(str)
-    def messageType(self, messageType):
-        if messageType is None:
+    def l4messageType(self, l4messageType):
+        if l4messageType is None:
             raise TypeError("Message type cannot be None")
-        self.__messageType = messageType
+        self.__l4messageType = l4messageType
 
     @property
     def session(self):

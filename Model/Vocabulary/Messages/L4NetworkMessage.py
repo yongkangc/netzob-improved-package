@@ -65,13 +65,15 @@ class L4NetworkMessage(L3NetworkMessage):
                  l3DestinationAddress=None,
                  l4Protocol=None,
                  l4SourceAddress=None,
-                 l4DestinationAddress=None):
+                 l4DestinationAddress=None,
+                 l4MessageType=None):
         super(L4NetworkMessage, self).__init__(
             data, date, l2Protocol, l2SourceAddress, l2DestinationAddress,
             l3Protocol, l3SourceAddress, l3DestinationAddress)
         self.l4Protocol = str(l4Protocol)
         self.l4SourceAddress = l4SourceAddress
         self.l4DestinationAddress = l4DestinationAddress
+        self.l4MessageType= str(l4MessageType)
 
     @property
     def l4Protocol(self):

@@ -1028,7 +1028,7 @@ class IP(Header):
         self.set_byte(8, value)
 
     def get_ip_p(self):
-        "Get ipProtocolNum to determine protocol number."
+        "Get ipProtocolNum to determine protocol from number."
         return self.get_byte(9)
 
     def set_ip_p(self, value):
@@ -1767,7 +1767,7 @@ class TCPOption(PacketBuffer):
             pass  # TODO
         return tmp_str
 
-
+# Class to extract ICMP layer attributes
 class ICMP(Header):
     ICMP_UNREACH = 3
 

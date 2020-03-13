@@ -227,9 +227,9 @@ class PCAPImporter(object):
                  etherType) = self.__decodeLayer2(header, payload)
                 (l3Proto, l3SrcAddr, l3DstAddr, l3Payload,
                  ipProtocolNum) = self.__decodeLayer3(etherType, l2Payload)
-                 # __decodeLayerNetworkTraffic
-                (l4Proto, l4SrcPort, l4DstPort,
-                 l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload)
+                #  # __decodeLayerNetworkTraffic
+                # (l4Proto, l4SrcPort, l4DstPort,
+                #  l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload)
             except NetzobImportException as e:
                 self._logger.warn(
                     "An error occured while decoding layer2 and layer3 of a packet: {0}".
@@ -245,6 +245,7 @@ class PCAPImporter(object):
                                          l3DstAddr)
             self.messages.add(l3Message)
 
+        # Decode Layer 4
         elif self.importLayer == 4:
             try:
                 (l2Proto, l2SrcAddr, l2DstAddr, l2Payload,
@@ -252,7 +253,7 @@ class PCAPImporter(object):
                 (l3Proto, l3SrcAddr, l3DstAddr, l3Payload,
                  ipProtocolNum) = self.__decodeLayer3(etherType, l2Payload)
                 (l4Proto, l4SrcPort, l4DstPort,
-                 l4Payload) = self.__decodeLayer4(ipProtocolNum, l3Payload)
+                 l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload)
             except NetzobImportException as e:
                 self._logger.warn(
                     "An error occured while decoding layer2, layer3 or layer4 of a packet: {0}".
@@ -264,7 +265,7 @@ class PCAPImporter(object):
             # Build the L4NetworkMessage
             l4Message = L4NetworkMessage(
                 l3Payload, epoch, l2Proto, l2SrcAddr, l2DstAddr, l3Proto,
-                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort)
+                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort,l4MessageType)
 
             self.messages.add(l4Message)
 
@@ -373,6 +374,7 @@ class PCAPImporter(object):
             l4DstPort = layer4.get_th_dport()
             l4Payload = layer4.get_data_as_string()
             return (l4Proto, l4SrcPort, l4DstPort, l4Payload)
+        
         else:
             warnMessage = _("Cannot import one of the provided packets since "
                             + "its layer 4 is unsupported (Only UDP and TCP " +
@@ -385,16 +387,19 @@ class PCAPImporter(object):
     # change
     def __decodeLayer4NetworkTraffic(self, ipProtocolNum, l3Payload):
         """Internal method that parses the specified header and extracts
-        layer4 related proprieties."""
+        layer4 related proprieties.
+        
+        With ICMP Support"""
 
         if ipProtocolNum == Packets.UDP.protocol:
             l4Proto = "UDP"
             l4Decoder = Decoders.UDPDecoder()
             layer4 = l4Decoder.decode(l3Payload)
+            l4MessageType="layer4.getMessageType"
             l4SrcPort = layer4.get_uh_sport()
             l4DstPort = layer4.get_uh_dport()
             l4Payload = layer4.get_data_as_string()
-            return (l4Proto, l4SrcPort, l4DstPort, l4Payload)
+            return (l4Proto, l4SrcPort, l4DstPort, l4Payload,l4MessageType)
         elif ipProtocolNum == Packets.TCP.protocol:
             l4Proto = "TCP"
             l4Decoder = Decoders.TCPDecoder()
@@ -404,9 +409,21 @@ class PCAPImporter(object):
             l4DstPort = layer4.get_th_dport()
             l4Payload = layer4.get_data_as_string()
             return (l4Proto, l4SrcPort, l4DstPort, l4Payload,l4MessageType)
+
+        # Added ICMP Support
+        elif ipProtocolNum == Packets.ICMP.protocol:
+            l4Proto = "ICMP"
+            l4Decoder = Decoders.ICMPDecoder()
+            layer4 = l4Decoder.decode(l3Payload)
+            l4MessageType=layer4.get_icmp_type()
+            l4SrcPort = None
+            l4DstPort = None
+            l4Payload = layer4.get_data_as_string()
+            return (l4Proto, l4SrcPort, l4DstPort, l4Payload,l4MessageType)
+        
         else:
             warnMessage = _("Cannot import one of the provided packets since "
-                            + "its layer 4 is unsupported (Only UDP and TCP " +
+                            + "its layer 4 is unsupported (Only UDP, ICMP and TCP " +
                             "are currently supported, packet IP protocol " +
                             "number = {0})").format(ipProtocolNum)
             self._logger.warn(warnMessage)

@@ -58,6 +58,8 @@ from netzob.Model.Vocabulary.Types.TypeConverter import TypeConverter
 
 class Symbol(AbstractField):
     """A symbol represents a common abstraction for all its messages.
+    The Layer messages are passed through the Abstracted Message Object to form 
+    Symbol Object.
 
     For example, we can create a symbol based on two raw messages
 
@@ -211,4 +213,6 @@ class Symbol(AbstractField):
             self.__messages.append(msg)
 
     def __repr__(self):
+        """This function prints out the "Symbol"
+        """
         return self.name
