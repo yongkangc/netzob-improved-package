@@ -47,11 +47,11 @@ class AccuracyMatrix:
             cluster_predicted = np.full((1,msg_per_cluster[index]),majority_type).tolist() # populing the cluster predicted with the majority element
             clusters_result[index] = cluster_predicted[0],cluster_true # stores into dictionary (cluster_predicted, cluster_true)
 
-        y_predict,y_true = prepare_result(clusters_result)
+        y_predict,y_true = prepare_cluster(clusters_result)
 
         return y_predict,y_true
 
-    def prepare_result(clusters_result):
+    def prepare_cluster(clusters_result):
         """ Converts results from dictionary to list form
         Returns y_pred and y_true in tuple 
         
@@ -97,3 +97,18 @@ class AccuracyMatrix:
         for i,j in itertools.product(range(cm.shape[0]),range(cm.shape[1])):
             plt.text(j,i,format(cm[i,j],'d'),horizontalalignment='center',color='white' if cm[i,j] >thresh else 'black')
         plt.show();
+
+    def majority_element(arr):
+        """Returns the majority value in the array.
+        Implemented using Boyer–Moore majority vote algorithm"""
+
+        counter, possible_element = 0, None
+        for i in arr:
+            if counter == 0:
+                possible_element, counter = i, 1
+            elif i == possible_element:
+                counter += 1
+            else:
+                counter -= 1
+
+        return possible_element
