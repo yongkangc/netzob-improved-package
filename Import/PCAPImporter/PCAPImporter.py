@@ -276,10 +276,10 @@ class PCAPImporter(object):
                 (l3Proto, l3SrcAddr, l3DstAddr, l3Payload,
                  ipProtocolNum) = self.__decodeLayer3(etherType, l2Payload)
                 (l4Proto, l4SrcPort, l4DstPort,
-                 l4Payload) = self.__decodeLayer4(ipProtocolNum, l3Payload)
+                 l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload)
             except NetzobImportException as e:
                 self._logger.warn(
-                    "An error occured while decoding layer2, layer3, layer4 or layer5 of a packet: {0}".
+                    "An error occured while decoding layer2, layer3 or layer4 of a packet: {0}".
                     format(e))
                 return
             if len(l4Payload) == 0:

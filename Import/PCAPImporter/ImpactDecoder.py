@@ -193,13 +193,11 @@ class ICMPDecoder(Decoder):
         ic.contains(packet)
         return ic
 
-
 class DataDecoder(Decoder):
     def decode(self, aBuffer):
         d = ImpactPacket.Data(aBuffer)
         self.set_decoded_protocol(d)
         return d
-
 
 class BaseDecoder(Decoder):
     def decode(self, buff):
