@@ -104,7 +104,6 @@ class L4NetworkMessage(L3NetworkMessage):
     @property
     def l4DestinationAddress(self):
         """The destination address of the fourth layer
-
         :type: int
         """
         return self.__l4DestinationAddress

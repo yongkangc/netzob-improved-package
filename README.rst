@@ -1,13 +1,10 @@
 ===========================================================
-Improved Version of `Netzob <https://github.com/netzob/netzob>`_
+Improved Version of `Netzob <https://github.com/netzob/netzob>`_ : Protocol Reverse Engineering and Fuzzing
 ===========================================================
 
 - Added ICMP Support
 - Added Confusion Matrix for evaluation
 
-===========================================================
-Netzob : Protocol Reverse Engineering, Modeling and Fuzzing
-===========================================================
 
 .. image:: https://travis-ci.org/netzob/netzob.svg?branch=next
     :target: https://travis-ci.org/netzob/netzob
@@ -36,7 +33,7 @@ Netzob : Protocol Reverse Engineering, Modeling and Fuzzing
 About
 =====
 
-Welcome to the official repository of Netzob.
+Welcome to the improved repository of Netzob.
 
 Netzob is a tool that can be used to **reverse engineer**, **model** and **fuzz** communication protocols. It is made of two components:
 

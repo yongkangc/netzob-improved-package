@@ -287,7 +287,7 @@ class PCAPImporter(object):
 
             l5Message = L4NetworkMessage(
                 l4Payload, epoch, l2Proto, l2SrcAddr, l2DstAddr, l3Proto,
-                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort)
+                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort,l4MessageType)
             
             self.messages.add(l5Message)
 
@@ -404,7 +404,7 @@ class PCAPImporter(object):
             l4Proto = "TCP"
             l4Decoder = Decoders.TCPDecoder()
             layer4 = l4Decoder.decode(l3Payload)
-            l4MessageType="layer4.getMessageType"
+            l4MessageType=layer4.get_th_flags()
             l4SrcPort = layer4.get_th_sport()
             l4DstPort = layer4.get_th_dport()
             l4Payload = layer4.get_data_as_string()
