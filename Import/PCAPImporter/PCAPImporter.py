@@ -265,7 +265,7 @@ class PCAPImporter(object):
             # Build the L4NetworkMessage
             l4Message = L4NetworkMessage(
                 l3Payload, epoch, l2Proto, l2SrcAddr, l2DstAddr, l3Proto,
-                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort,l4MessageType)
+                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort,l4MessageType,l3Payload)
 
             self.messages.add(l4Message)
 
@@ -395,7 +395,7 @@ class PCAPImporter(object):
             l4Proto = "UDP"
             l4Decoder = Decoders.UDPDecoder()
             layer4 = l4Decoder.decode(l3Payload)
-            l4MessageType="layer4.getMessageType"
+            l4MessageType="UDP"
             l4SrcPort = layer4.get_uh_sport()
             l4DstPort = layer4.get_uh_dport()
             l4Payload = layer4.get_data_as_string()
@@ -404,7 +404,7 @@ class PCAPImporter(object):
             l4Proto = "TCP"
             l4Decoder = Decoders.TCPDecoder()
             layer4 = l4Decoder.decode(l3Payload)
-            l4MessageType=layer4.get_th_flags()
+            l4MessageType=layer4.get_flag_name() # Get Message Type
             l4SrcPort = layer4.get_th_sport()
             l4DstPort = layer4.get_th_dport()
             l4Payload = layer4.get_data_as_string()

@@ -1378,7 +1378,33 @@ class TCP(Header):
         self.set_long(8, aValue)
 
     def get_th_flags(self):
-        return self.get_word(12) & self.TCP_FLAGS_MASK
+        return self.get_word(12) & self.TCP_FLAGS_MASK # TCP_FLAGS_MASK = 0x00FF
+
+    def get_flag_name(self):
+        """ Function to get flag number and returns flag name
+        
+        Author : YK
+        """
+        # filter for the TCP Flag
+        FLAG = 0XFF
+        # tmp = self.get_word(13) & FLAG
+       
+        #print(type(tmp))
+        #print(type(self.TCP_FLAGS_MASK))
+
+        # if self.get_th_flags() & 2:
+        #     return "SYN"
+        
+        # else:
+        #     return 0
+
+        tmp = []
+        for i in range(20):
+            bytes = "{} :".format(i+1) + hex(self.get_byte(i))
+            tmp.append(bytes)
+
+        return tmp
+
 
     def set_th_flags(self, aValue):
         masked = self.get_word(12) & (~self.TCP_FLAGS_MASK)
@@ -1407,16 +1433,17 @@ class TCP(Header):
     # Flag accessors
 
     def get_th_reserved(self):
-        tmp_value = self.get_byte(12) & 0x0f
+        tmp_value = self.get_byte(12) & 0x0f 
         return tmp_value
 
     def get_th_off(self):
-        tmp_value = self.get_byte(12) >> 4
+        tmp_value = self.get_byte(12) >> 4 # right shift by 4
         return tmp_value
 
     def set_th_off(self, aValue):
-        mask = 0xF0
-        masked = self.get_byte(12) & (~mask)
+        """ Get bytes, apply mask"""
+        mask = 0xF0 # Hexadecimal
+        masked = self.get_byte(12) & (~mask) # inverse mask (complement)
         nb = masked | ((aValue << 4) & mask)
         return self.set_byte(12, nb)
 
@@ -1589,7 +1616,7 @@ class TCP(Header):
             op_buf.fromstring("\0" * num_pad)
         return op_buf
 
-    def __str__(self):
+    def __str__(self): # To get the flag name
         tmp_str = 'TCP '
         if self.get_ECE():
             tmp_str += 'ece '

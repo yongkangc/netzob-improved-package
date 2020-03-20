@@ -68,7 +68,7 @@ class L3NetworkMessage(L2NetworkMessage):
         self.l3Protocol = str(l3Protocol)
         self.l3SourceAddress = str(l3SourceAddress)
         self.l3DestinationAddress = str(l3DestinationAddress)
-
+        
     @property
     def l3Protocol(self):
         """The protocol of the third layer

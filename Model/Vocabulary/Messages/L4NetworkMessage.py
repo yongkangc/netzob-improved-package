@@ -66,7 +66,8 @@ class L4NetworkMessage(L3NetworkMessage):
                  l4Protocol=None,
                  l4SourceAddress=None,
                  l4DestinationAddress=None,
-                 l4MessageType=None):
+                 l4MessageType=None,
+                 l4Payload=None):
         super(L4NetworkMessage, self).__init__(
             data, date, l2Protocol, l2SourceAddress, l2DestinationAddress,
             l3Protocol, l3SourceAddress, l3DestinationAddress)
@@ -74,6 +75,7 @@ class L4NetworkMessage(L3NetworkMessage):
         self.l4SourceAddress = l4SourceAddress
         self.l4DestinationAddress = l4DestinationAddress
         self.l4MessageType= str(l4MessageType)
+        self.l4Payload= str(l4Payload)
 
     @property
     def l4Protocol(self):
@@ -112,6 +114,20 @@ class L4NetworkMessage(L3NetworkMessage):
     @typeCheck(int)
     def l4DestinationAddress(self, l4DestinationAddress):
         self.__l4DestinationAddress = l4DestinationAddress
+
+
+    @property
+    def l4MessageType(self):
+        """The Message Type of the fourth layer
+
+        :type: str
+        """
+        return self.__l4MessageType
+
+    @l4MessageType.setter
+    @typeCheck(str)
+    def l4MessageType(self, l4MessageType):
+        self.__l4MessageType = l4MessageType
 
     @property
     def source(self):
