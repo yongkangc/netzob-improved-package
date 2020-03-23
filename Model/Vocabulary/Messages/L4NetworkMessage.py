@@ -116,18 +116,18 @@ class L4NetworkMessage(L3NetworkMessage):
         self.__l4DestinationAddress = l4DestinationAddress
 
 
-    @property
-    def l4MessageType(self):
-        """The Message Type of the fourth layer
+    # @property
+    # def l4MessageType(self):
+    #     """The Message Type of the fourth layer
 
-        :type: str
-        """
-        return self.__l4MessageType
+    #     :type: str
+    #     """
+    #     return self.__l4MessageType
 
-    @l4MessageType.setter
-    @typeCheck(str)
-    def l4MessageType(self, l4MessageType):
-        self.__l4MessageType = l4MessageType
+    # @l4MessageType.setter
+    # @typeCheck(str)
+    # def l4MessageType(self, l4MessageType):
+    #     self.__l4MessageType = l4MessageType
 
     @property
     def source(self):

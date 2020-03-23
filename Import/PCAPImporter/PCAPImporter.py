@@ -335,12 +335,11 @@ class PCAPImporter(object):
         if etherType == Packets.IP.ethertype:
             l3Proto = "IP"
             l3Decoder = Decoders.IPDecoder()
-            layer3 = l3Decoder.decode(l2Payload)
+            layer3 = l3Decoder.decode(l2Payload) # Or could be error here.Most likely as the src Address is wrong
             paddingSize = len(l2Payload) - layer3.get_ip_len()
-
             l3SrcAddr = layer3.get_ip_src()
             l3DstAddr = layer3.get_ip_dst()
-            l3Payload = l2Payload[layer3.get_header_size():]
+            l3Payload = l2Payload[layer3.get_header_size():] # could be error here
             if paddingSize > 0 and len(l3Payload) > paddingSize:
                 l3Payload = l3Payload[:len(l3Payload) - paddingSize]
             ipProtocolNum = layer3.get_ip_p()
