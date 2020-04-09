@@ -1382,29 +1382,45 @@ class TCP(Header):
 
     def get_flag_name(self):
         """ Function to get flag number and returns flag name
-        
         Author : YK
         """
-        # filter for the TCP Flag
-        FLAG = 0XFF
-        # tmp = self.get_word(13) & FLAG
-       
-        #print(type(tmp))
-        #print(type(self.TCP_FLAGS_MASK))
+        # hex_value = self.get_th_flags()
+        # # TCP Flags
+        # flag_dict = {
+        # "FIN" : 0x01,
+        # "SYN" : 0x02,
+        # "RST" : 0x04,
+        # "PSH" : 0x08,
+        # "ACK" : 0x10,
+        # "URG" : 0x20,
+        # "ECE" : 0x40,
+        # "CWR" : 0x80 }
 
-        # if self.get_th_flags() & 2:
-        #     return "SYN"
+        # for flag,value in flag_dict:
+        #     if hex_value == value:
+        #         return flag
+        #     else:
+        #         return None  
+
+        tmp_str = 'TCP : '
+        if self.get_ECE():
+            tmp_str += 'ece '
+        if self.get_CWR():
+            tmp_str += 'cwr '
+        if self.get_ACK():
+            tmp_str += 'ack '
+        if self.get_FIN():
+            tmp_str += 'fin '
+        if self.get_PSH():
+            tmp_str += 'push '
+        if self.get_RST():
+            tmp_str += 'rst '
+        if self.get_SYN():
+            tmp_str += 'syn '
+        if self.get_URG():
+            tmp_str += 'urg '
         
-        # else:
-        #     return 0
-
-        tmp = []
-        for i in range(20):
-            bytes = "{} :".format(i+1) + hex(self.get_byte(i))
-            tmp.append(bytes)
-
-        return tmp
-
+        return tmp_str
 
     def set_th_flags(self, aValue):
         masked = self.get_word(12) & (~self.TCP_FLAGS_MASK)

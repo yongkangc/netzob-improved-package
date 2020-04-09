@@ -251,24 +251,28 @@ class PCAPImporter(object):
                 (l2Proto, l2SrcAddr, l2DstAddr, l2Payload,
                  etherType) = self.__decodeLayer2(header, payload)
                 (l3Proto, l3SrcAddr, l3DstAddr, l3Payload,
-                 ipProtocolNum) = self.__decodeLayer3(etherType, l2Payload)
+                 ipProtocolNum) = self.__decodeLayer3(etherType, l2Payload) 
                 (l4Proto, l4SrcPort, l4DstPort,
-                 l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload)
+                 l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload) # pay load still okay
+            
+                # # mutations happen here   
+                # if len(l4Payload) == 0:
+                #     return    
+               
             except NetzobImportException as e:
                 self._logger.warn(
                     "An error occured while decoding layer2, layer3 or layer4 of a packet: {0}".
                     format(e))
                 return
-            if len(l4Payload) == 0:
-                return
-
+            
             # Build the L4NetworkMessage
             l4Message = L4NetworkMessage(
                 l3Payload, epoch, l2Proto, l2SrcAddr, l2DstAddr, l3Proto,
-                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort,l4MessageType,l3Payload)
-
+                l3SrcAddr, l3DstAddr, l4Proto, l4SrcPort, l4DstPort,l4MessageType)
+        
             self.messages.add(l4Message)
-
+            
+        # For import layer >= 5
         else:
             try:
                 (l2Proto, l2SrcAddr, l2DstAddr, l2Payload,
@@ -277,6 +281,7 @@ class PCAPImporter(object):
                  ipProtocolNum) = self.__decodeLayer3(etherType, l2Payload)
                 (l4Proto, l4SrcPort, l4DstPort,
                  l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload)
+                 
             except NetzobImportException as e:
                 self._logger.warn(
                     "An error occured while decoding layer2, layer3 or layer4 of a packet: {0}".
@@ -335,12 +340,12 @@ class PCAPImporter(object):
         if etherType == Packets.IP.ethertype:
             l3Proto = "IP"
             l3Decoder = Decoders.IPDecoder()
-            layer3 = l3Decoder.decode(l2Payload) # Or could be error here.Most likely as the src Address is wrong
+            layer3 = l3Decoder.decode(l2Payload) 
             paddingSize = len(l2Payload) - layer3.get_ip_len()
             l3SrcAddr = layer3.get_ip_src()
             l3DstAddr = layer3.get_ip_dst()
-            l3Payload = l2Payload[layer3.get_header_size():] # could be error here
-            if paddingSize > 0 and len(l3Payload) > paddingSize:
+            l3Payload = l2Payload[layer3.get_header_size():] # This is correct!
+            if paddingSize > 0 and len(l3Payload) > paddingSize: # Could be here
                 l3Payload = l3Payload[:len(l3Payload) - paddingSize]
             ipProtocolNum = layer3.get_ip_p()
             return (l3Proto, l3SrcAddr, l3DstAddr, l3Payload, ipProtocolNum)
@@ -368,8 +373,8 @@ class PCAPImporter(object):
         elif ipProtocolNum == Packets.TCP.protocol:
             l4Proto = "TCP"
             l4Decoder = Decoders.TCPDecoder()
-            layer4 = l4Decoder.decode(l3Payload)
-            l4SrcPort = layer4.get_th_sport()
+            layer4 = l4Decoder.decode(l3Payload) # Or could be error here.Most likely as the src Address is wrong
+            l4SrcPort = layer4.get_th_sport() 
             l4DstPort = layer4.get_th_dport()
             l4Payload = layer4.get_data_as_string()
             return (l4Proto, l4SrcPort, l4DstPort, l4Payload)
