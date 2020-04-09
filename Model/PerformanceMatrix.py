@@ -44,8 +44,7 @@
 # +---------------------------------------------------------------------------+
 
 from netzob.all import *
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import multilabel_confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, accuracy_score
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -127,8 +126,7 @@ class PerformanceMatrix:
         unique_types = np.unique(np.array(y_true))
         unique_clusters = len(unique_types)
         cluster_no = len(clusters_result[2])  # Number of clusters predicted
-        accuracy = metrics.accuracy_score(y_true, y_pred)  # Calculating accuracy score
-        # Calculate precision
+        accuracy = accuracy_score(y_true, y_pred)  # Calculating accuracy score
 
         print("Number of Message types : {}".format(unique_types))
         print("Number of Clusters : {}".format(unique_clusters))
@@ -138,9 +136,13 @@ class PerformanceMatrix:
         class_labels = list(set(y_true))  # Creating a list of unqiue labels
         cm = confusion_matrix(y_true, y_pred, labels=class_labels)  # Creating a confusion matrix from y_true and y_pred
 
-        exp_series = pd.Series(y_true)
-        pred_series = pd.Series(y_pred)
-        # return pd.crosstab(exp_series, pred_series, rownames=['Actual'], colnames=['Predicted'],margins=True)
+        # Calculating precision and recall
+        # Using micro average as there might be a class imbalance (i.e more examples of one class than another)
+        metric_score_micro = precision_recall_fscore_support(y_true, y_pred, average="micro")
+        print("Precision Score is {:.2f}".format(metric_score_micro[0]))
+        print("Recall Score is {:.2f}".format(metric_score_micro[1]))
+
+        # Plotting confusion matrix
         plt.imshow(cm, cmap=plt.cm.Blues, interpolation='nearest')
         plt.colorbar()
         plt.title('Confusion Matrix without Normalization')
@@ -157,7 +159,7 @@ class PerformanceMatrix:
         for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
             plt.text(j, i, format(cm[i, j], 'd'), horizontalalignment='center',
                      color='white' if cm[i, j] > thresh else 'black')
-        plt.show();  # Plots the confusion matrix
+        plt.show()  # Plots the confusion matrix
 
     def majority_element(arr):
         """Returns the majority value in the array.
