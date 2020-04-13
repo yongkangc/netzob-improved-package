@@ -55,8 +55,8 @@ class PerformanceMatrix:
     """This class implements methods to test the performace of different algorithm
     in clustering Network Messages
     
-    >>> from netzob.Inference.Model import PerformanceMatrix
-    >>> cluster = PerformanceMatrix.cluster_UPGMA("./test/resources/pcaps/icmp_big.pcap",importLayer=4).values()
+    >>> from netzob.Model.performance_matrix import PerformanceMatrix
+    >>> cluster = cluster_UPGMA("./test/resources/pcaps/icmp_big.pcap",importLayer=4).values()
     >>> print(cluster)
     
     
@@ -65,7 +65,8 @@ class PerformanceMatrix:
     def __init__(self):
         pass
 
-    def cluster_UPGMA(self,message):
+    @staticmethod
+    def cluster_UPGMA(message):
         """ Clusters and labels PCAP Messages with UPGMA for evaluation.
         
         Returns a tuple 
@@ -115,16 +116,13 @@ class PerformanceMatrix:
 
         return cluster_predicted, cluster_true, msg_per_cluster
 
-    def visualise_confusion(self,clusters_result):
+    @staticmethod
+    def visualise_confusion(clusters_result):
         """Returns a visualisation of the confusion matrix based on the result"""
 
         # Obtaining the turth and predicted labels from dictionary
         y_pred = clusters_result[0]
         y_true = clusters_result[1]
-
-        print(y_pred)
-        print("\n\n\n")
-        print(y_true)
 
         # Finding the unique values in the truth. This will tell us number of unique clusters
         unique_types_true = np.unique(np.array(y_true))
@@ -165,9 +163,16 @@ class PerformanceMatrix:
                      color='white' if cm[i, j] > thresh else 'black')
         plt.show()  # Plots the confusion matrix
 
-    def majority_element(self,arr):
+    @staticmethod
+    def majority_element(arr):
         """Returns the majority value in the array.
-        Implemented using Boyer–Moore majority vote algorithm"""
+        Implemented using Boyer–Moore majority vote algorithm
+
+        >>>  print(PerformanceMatrix.majority_element([1,2,3,1,12]))
+        >>> 12
+
+
+        """
 
         counter, possible_element = 0, None
         for i in arr:
@@ -179,3 +184,5 @@ class PerformanceMatrix:
                 counter -= 1
 
         return possible_element
+
+

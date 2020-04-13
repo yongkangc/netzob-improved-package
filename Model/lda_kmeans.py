@@ -42,14 +42,13 @@
 # +---------------------------------------------------------------------------+
 # | Local application imports                                                 |
 # +---------------------------------------------------------------------------+
-
 from netzob.all import *
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, accuracy_score
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import itertools
-from netzob.Model import PerformanceMatrix
+from netzob.Model.performance_matrix import PerformanceMatrix
 
 from pprint import pprint
 
@@ -62,15 +61,14 @@ import matplotlib.pyplot as plt
 
 # NLP Modules
 import gensim
-from gensim.models import LdaModel, LdaMulticore
+from gensim.models import LdaModel
 from gensim.corpora import Dictionary
 from gensim.models import Phrases
 from gensim.test.utils import datapath, get_tmpfile
 import pyLDAvis.gensim
 import warnings
 from gensim.models import TfidfModel
-from sklearn.metrics import confusion_matrix, precision_score, precision_recall_fscore_support, accuracy_score
-
+from gensim.similarities import Similarity
 
 
 class LDAModel:
@@ -84,8 +82,9 @@ class LDAModel:
 
     to cluster the messages
 
-    >>> from netzob.Model import LDAModel
-    >>> cluster = clusterByLDA("./test/resources/pcaps/utf8-encoded-messages.pcap", 4)
+    >>> from netzob.Model.lda_kmeans import LDAModel
+    >>> model = LDAModel()
+    >>> model.clusterByLDA(file_path ="./test/resources/pcaps/utf8-encoded-messages.pcap", import_layer = 4)
     >>> print(cluster)
 
     """
@@ -93,18 +92,18 @@ class LDAModel:
     def __init__(self):
         pass
 
-    def clusterByLDA(self,file_path, import_layer):
+    def clusterByLDA(self, file_path, import_layer):
         """ Clusters the message type using Latent Dirichlet Allocation"""
-        message = import_message(file_path, import_layer)
-        msg_type = identify_msg_type(message)
+        message = self.import_message(file_path, import_layer)
+        msg_type = self.identify_msg_type(message)
 
         # generate a text document of message (located in data.txt)
-        write_message(message)
+        self.write_message(message)
 
         # Processing the text document (located in data.txt)
-        docs = msg_to_bytes()
-        dictionary = create_dict(docs)
-        corpus = create_corpus(docs)
+        docs = self.msg_to_bytes()
+        dictionary = self.create_dict(docs)
+        corpus = self.create_corpus(docs)
 
         # Set training parameters.
         num_topics = 8
@@ -154,24 +153,24 @@ class LDAModel:
 
         # Average topic coherence is the sum of topic coherences of all topics, divided by the number of topics.
         avg_topic_coherence = sum([t[1] for t in top_topics]) / num_topics
-        similarity_matrix(corpus, dictionary)
+        self.similarity_matrix(corpus, dictionary)
 
         # visualise_LDA(lda_model, corpus, dictionary)
 
         # outputs results in a txt file
-        write_result(lda_model, avg_topic_coherence, topic_dist)
+        self.write_result(lda_model, avg_topic_coherence, topic_dist)
 
         # Clustering by Kmeans
         num_topics = 8  # need to write a function to find out the optimal numb of topics
-        clusters_result = clusterByKMeans(num_topics=num_topics, lda_model=lda_model, y_true=msg_type, docs=docs)
+        clusters_result = self.clusterByKMeans(num_topics=num_topics, lda_model=lda_model, y_true=msg_type, docs=docs)
 
         # Getting the Performance matrix (accuracy, confusion matrix, precision)
-        visualise_confusion(clusters_result=clusters_result)
+        PerformanceMatrix.visualise_confusion(clusters_result=clusters_result)
 
-    def clusterByKMeans(self,num_topics, lda_model, y_true, docs):
+    def clusterByKMeans(self, num_topics, lda_model, y_true, docs):
         """ Clusters the output of LDA by Kmeans
         Returns y true and y predicted as well. And Kmeans visualisation."""
-        corpus = create_corpus(docs)
+        corpus = self.create_corpus(docs)
         topic_dist = [lda_model.get_document_topics(item, minimum_probability=0.0) for item in corpus]
         X = pd.DataFrame(topic_dist)  # Dataframe of the result. Use Jupyter notebook to view.
 
@@ -205,7 +204,7 @@ class LDAModel:
         y_pred = []
         for i in label_dict:
             # Labelling the predicted cluster
-            maj = majority_element(label_dict[i])
+            maj = PerformanceMatrix.majority_element(label_dict[i])
             cluster_maj = np.full((1, len(label_dict[i])), maj).tolist()[0]
             # print(cluster_predicted)
             y_pred.extend(cluster_maj)  # Adding to the list of predicted labels for cluster
@@ -226,7 +225,7 @@ class LDAModel:
 
         return (y_pred, y_true, np.unique(kmeans))
 
-    def tf_idf(self,corpus):
+    def tf_idf(self, corpus):
         """Using TF/IDF to vectorize the data
         Returns tfidf weighted corpus"""
         tfidf = TfidfModel(corpus)  # fit model
@@ -234,7 +233,7 @@ class LDAModel:
         corpus_tfidf = tfidf[corpus]
         return corpus_tfidf
 
-    def identify_msg_type(self,message):
+    def identify_msg_type(self, message):
         """" Returns Message Protocol and corresponding Message type """
         # symbol = Symbol(messages=message)
 
@@ -252,13 +251,13 @@ class LDAModel:
 
         return msg_type
 
-    def visualise_LDA(self,lda_model, corpus, dictionary):
+    def visualise_LDA(self, lda_model, corpus, dictionary):
         """Visualise the LDA results"""
         warnings.filterwarnings("ignore", category=DeprecationWarning)
         visualisation = pyLDAvis.gensim.prepare(lda_model, corpus, dictionary)
         pyLDAvis.save_html(visualisation, 'LDA_Visualisation.html')
 
-    def write_result(self,lda_model, avg_topic_coherence, topic_dist):
+    def write_result(self, lda_model, avg_topic_coherence, topic_dist):
         """Create a text document of the result"""
         with open("result4.txt", "w") as f:
             # pprint(topic_dist, stream=f)
@@ -268,21 +267,24 @@ class LDAModel:
     def load_lda(self):
         """Loading the LDA model from save file
         Returns the LDA Model"""
-        corpus = create_corpus()
+        corpus = self.create_corpus()
         temp_file = datapath("model")
         lda_model = gensim.models.LdaModel.load(temp_file)
 
         return lda_model
 
-    def import_message(self,file_path, importLayer):
+    def import_message(self, file_path, importLayer):
         """Abstracted function to import messages"""
+        from netzob.all import PCAPImporter
         message = PCAPImporter.readFile(file_path, importLayer=importLayer).values()
         return message
 
-    def write_message(self,message):
+    def write_message(self, message):
         """Outputs the message in data.txt
         For LDA to process """
         datafile = open("data.txt", "w")
+
+        from netzob.all import Symbol
         symbol = Symbol(messages=message)
         # For Symbol
         datafile.writelines(str(symbol) + "\n")
@@ -304,17 +306,17 @@ class LDAModel:
     #
     #     return possible_element
 
-    def parse_input(self,text):
+    def parse_input(self, text):
         return text.strip("\n").strip(" ").strip("b")
 
-    def tokenize_hex(self,text):
+    def tokenize_hex(self, text):
         # re.split(r'\\x'+'\\',text)
         return text.split("\\")
 
-    def is_hex(self,text):
+    def is_hex(self, text):
         return text != "\'"
 
-    def parse_hex(self,text):
+    def parse_hex(self, text):
         return text.strip("x")
 
     def msg_to_bytes(self):
@@ -328,15 +330,15 @@ class LDAModel:
         for line in text:
             parsed_hex = []
             if "\\x" in line:
-                line = parse_input(line)
-                tokenized_hex = tokenize_hex(line)
+                line = self.parse_input(line)
+                tokenized_hex = self.tokenize_hex(line)
                 for hex in tokenized_hex:
-                    if is_hex(hex):
-                        parsed_hex.append(parse_hex(hex))
+                    if self.is_hex(hex):
+                        parsed_hex.append(self.parse_hex(hex))
                 doc.append(parsed_hex)
         return doc
 
-    def n_gram_message(self,docs):
+    def n_gram_message(self, docs):
         # Add bigrams and trigrams to docs (only ones that appear 10 times or more).
         bigram = Phrases(docs, min_count=10)
         trigram = Phrases(bigram[docs])
@@ -352,7 +354,7 @@ class LDAModel:
                     docs[idx].append(token)
         return docs
 
-    def filter_tokens(self,dictionary):
+    def filter_tokens(self, dictionary):
         """ Filter out words that occur less than "no_below" documents, or more than "no_above" of the documents.
         Returns dictionary with filtered tokens"""
         no_below = 10
@@ -361,13 +363,13 @@ class LDAModel:
 
         return dictionary
 
-    def create_dict(self,docs):
+    def create_dict(self, docs):
         """ Create a dictionary representation of the documents."""
         # Create a dictionary representation of the documents.
         dictionary = Dictionary(docs)
         return dictionary
 
-    def create_corpus(self,docs):
+    def create_corpus(self, docs):
         """Returns a TF/IDF Weighted corpus"""
         # Create a dictionary representation of the documents.
         dictionary = Dictionary(docs)
@@ -375,5 +377,13 @@ class LDAModel:
         # Bag-of-words representation of the documents.
         corpus = [dictionary.doc2bow(doc) for doc in docs]  # output (ID:frequency)
         # Using Tf-Idf
-        corpus_tfidf = tf_idf(corpus)  # Gensim object
+        corpus_tfidf = self.tf_idf(corpus)  # Gensim object
         return corpus_tfidf
+
+    def similarity_matrix(self,corpus, dictionary):
+        """Compute cosine similarity against a corpus of documents by storing the index matrix in memory."""
+        # index = MatrixSimilarity(corpus, num_features=len(dictionary))
+        index_temp = get_tmpfile("index")
+        index = Similarity(index_temp, corpus, num_features=len(dictionary))  # create index
+        for sims in index[corpus]:
+            pprint(sims)
