@@ -10,7 +10,7 @@
 # | it under the terms of the GNU General Public License as published by      |
 # | the Free Software Foundation, either version 3 of the License, or         |
 # | (at your option) any later version.                                       |
-# |                                                                           |
+# |                                                                           |``
 # | This program is distributed in the hope that it will be useful,           |
 # | but WITHOUT ANY WARRANTY; without even the implied warranty of            |
 # | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              |
@@ -122,14 +122,18 @@ class PerformanceMatrix:
         y_pred = clusters_result[0]
         y_true = clusters_result[1]
 
+        print(y_pred)
+        print("\n\n\n")
+        print(y_true)
+
         # Finding the unique values in the truth. This will tell us number of unique clusters
-        unique_types = np.unique(np.array(y_true))
-        unique_clusters = len(unique_types)
+        unique_types_true = np.unique(np.array(y_true))
+        unique_clusters_true = len(unique_types_true)  # Number of true unique clusters
         cluster_no = len(clusters_result[2])  # Number of clusters predicted
         accuracy = accuracy_score(y_true, y_pred)  # Calculating accuracy score
 
-        print("Number of Message types : {}".format(unique_types))
-        print("Number of Clusters : {}".format(unique_clusters))
+        print("Number of Message types : {}".format(unique_types_true))
+        print("Number of Clusters : {}".format(unique_clusters_true))
         print("Number of Clusters predicted : {}".format(cluster_no))
         print("Percentage Accuracy in predicted cluster : {:.2%} ".format(accuracy))
 
@@ -141,8 +145,8 @@ class PerformanceMatrix:
         metric_score_micro = precision_recall_fscore_support(y_true, y_pred, average="micro")
         print("Precision Score is {:.2f}".format(metric_score_micro[0]))
         print("Recall Score is {:.2f}".format(metric_score_micro[1]))
+        print("F Score is {:.2f}".format(metric_score_micro[2]))
 
-        # Plotting confusion matrix
         plt.imshow(cm, cmap=plt.cm.Blues, interpolation='nearest')
         plt.colorbar()
         plt.title('Confusion Matrix without Normalization')
@@ -152,7 +156,7 @@ class PerformanceMatrix:
 
         # tick_marks
         plt.xticks(tick_marks, class_labels, fontsize=6)
-        plt.yticks(tick_marks, class_labels)
+        plt.yticks(tick_marks, class_labels, fontsize=7)
 
         # plotting text value inside cells
         thresh = cm.max() / 2.
