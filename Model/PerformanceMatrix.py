@@ -44,7 +44,7 @@
 # +---------------------------------------------------------------------------+
 
 from netzob.all import *
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, accuracy_score
+from sklearn.metrics import confusion_matrix, precision_score, precision_recall_fscore_support, accuracy_score
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np

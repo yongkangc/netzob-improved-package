@@ -49,7 +49,28 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import itertools
-from netzob.Inference.Model import PerformanceMatrix
+from netzob.Model import PerformanceMatrix
+
+from pprint import pprint
+
+# Data Analytics mods
+import numpy as np
+import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+
+# NLP Modules
+import gensim
+from gensim.models import LdaModel, LdaMulticore
+from gensim.corpora import Dictionary
+from gensim.models import Phrases
+from gensim.test.utils import datapath, get_tmpfile
+import pyLDAvis.gensim
+import warnings
+from gensim.models import TfidfModel
+from sklearn.metrics import confusion_matrix, precision_score, precision_recall_fscore_support, accuracy_score
+
 
 
 class LDAModel:
