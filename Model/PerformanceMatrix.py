@@ -65,7 +65,7 @@ class PerformanceMatrix:
     def __init__(self):
         pass
 
-    def cluster_UPGMA(message):
+    def cluster_UPGMA(self,message):
         """ Clusters and labels PCAP Messages with UPGMA for evaluation.
         
         Returns a tuple 
@@ -115,7 +115,7 @@ class PerformanceMatrix:
 
         return cluster_predicted, cluster_true, msg_per_cluster
 
-    def visualise_confusion(clusters_result):
+    def visualise_confusion(self,clusters_result):
         """Returns a visualisation of the confusion matrix based on the result"""
 
         # Obtaining the turth and predicted labels from dictionary
@@ -165,7 +165,7 @@ class PerformanceMatrix:
                      color='white' if cm[i, j] > thresh else 'black')
         plt.show()  # Plots the confusion matrix
 
-    def majority_element(arr):
+    def majority_element(self,arr):
         """Returns the majority value in the array.
         Implemented using Boyer–Moore majority vote algorithm"""
 

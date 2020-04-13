@@ -84,8 +84,8 @@ class LDAModel:
 
     to cluster the messages
 
-    >>> from netzob.Inference.Model import LDAModel
-    >>> cluster = LDAModel.clusterByLDA("./test/resources/pcaps/utf8-encoded-messages.pcap", 4)
+    >>> from netzob.Model import LDAModel
+    >>> cluster = clusterByLDA("./test/resources/pcaps/utf8-encoded-messages.pcap", 4)
     >>> print(cluster)
 
     """
@@ -93,7 +93,7 @@ class LDAModel:
     def __init__(self):
         pass
 
-    def clusterByLDA(file_path, import_layer):
+    def clusterByLDA(self,file_path, import_layer):
         """ Clusters the message type using Latent Dirichlet Allocation"""
         message = import_message(file_path, import_layer)
         msg_type = identify_msg_type(message)
@@ -168,7 +168,7 @@ class LDAModel:
         # Getting the Performance matrix (accuracy, confusion matrix, precision)
         visualise_confusion(clusters_result=clusters_result)
 
-    def clusterByKMeans(num_topics, lda_model, y_true, docs):
+    def clusterByKMeans(self,num_topics, lda_model, y_true, docs):
         """ Clusters the output of LDA by Kmeans
         Returns y true and y predicted as well. And Kmeans visualisation."""
         corpus = create_corpus(docs)
@@ -226,7 +226,7 @@ class LDAModel:
 
         return (y_pred, y_true, np.unique(kmeans))
 
-    def tf_idf(corpus):
+    def tf_idf(self,corpus):
         """Using TF/IDF to vectorize the data
         Returns tfidf weighted corpus"""
         tfidf = TfidfModel(corpus)  # fit model
@@ -234,7 +234,7 @@ class LDAModel:
         corpus_tfidf = tfidf[corpus]
         return corpus_tfidf
 
-    def identify_msg_type(message):
+    def identify_msg_type(self,message):
         """" Returns Message Protocol and corresponding Message type """
         # symbol = Symbol(messages=message)
 
@@ -252,20 +252,20 @@ class LDAModel:
 
         return msg_type
 
-    def visualise_LDA(lda_model, corpus, dictionary):
+    def visualise_LDA(self,lda_model, corpus, dictionary):
         """Visualise the LDA results"""
         warnings.filterwarnings("ignore", category=DeprecationWarning)
         visualisation = pyLDAvis.gensim.prepare(lda_model, corpus, dictionary)
         pyLDAvis.save_html(visualisation, 'LDA_Visualisation.html')
 
-    def write_result(lda_model, avg_topic_coherence, topic_dist):
+    def write_result(self,lda_model, avg_topic_coherence, topic_dist):
         """Create a text document of the result"""
         with open("result4.txt", "w") as f:
             # pprint(topic_dist, stream=f)
             print(topic_dist, file=f)
             print('Average topic coherence: %.4f.' % avg_topic_coherence, file=f)
 
-    def load_lda():
+    def load_lda(self):
         """Loading the LDA model from save file
         Returns the LDA Model"""
         corpus = create_corpus()
@@ -274,12 +274,12 @@ class LDAModel:
 
         return lda_model
 
-    def import_message(file_path, importLayer):
+    def import_message(self,file_path, importLayer):
         """Abstracted function to import messages"""
         message = PCAPImporter.readFile(file_path, importLayer=importLayer).values()
         return message
 
-    def write_message(message):
+    def write_message(self,message):
         """Outputs the message in data.txt
         For LDA to process """
         datafile = open("data.txt", "w")
@@ -289,35 +289,35 @@ class LDAModel:
 
         datafile.close()
 
-    def majority_element(arr):
-        """Returns the majority value in the array.
-        Implemented using Boyer–Moore majority vote algorithm"""
+    # def majority_element(self,arr):
+    #     """Returns the majority value in the array.
+    #     Implemented using Boyer–Moore majority vote algorithm"""
+    #
+    #     counter, possible_element = 0, None
+    #     for i in arr:
+    #         if counter == 0:
+    #             possible_element, counter = i, 1
+    #         elif i == possible_element:
+    #             counter += 1
+    #         else:
+    #             counter -= 1
+    #
+    #     return possible_element
 
-        counter, possible_element = 0, None
-        for i in arr:
-            if counter == 0:
-                possible_element, counter = i, 1
-            elif i == possible_element:
-                counter += 1
-            else:
-                counter -= 1
-
-        return possible_element
-
-    def parse_input(text):
+    def parse_input(self,text):
         return text.strip("\n").strip(" ").strip("b")
 
-    def tokenize_hex(text):
+    def tokenize_hex(self,text):
         # re.split(r'\\x'+'\\',text)
         return text.split("\\")
 
-    def is_hex(text):
+    def is_hex(self,text):
         return text != "\'"
 
-    def parse_hex(text):
+    def parse_hex(self,text):
         return text.strip("x")
 
-    def msg_to_bytes():
+    def msg_to_bytes(self):
         """ Breaking Messages into bytes
         Returns a list of Messages
         """
@@ -336,7 +336,7 @@ class LDAModel:
                 doc.append(parsed_hex)
         return doc
 
-    def n_gram_message(docs):
+    def n_gram_message(self,docs):
         # Add bigrams and trigrams to docs (only ones that appear 10 times or more).
         bigram = Phrases(docs, min_count=10)
         trigram = Phrases(bigram[docs])
@@ -352,7 +352,7 @@ class LDAModel:
                     docs[idx].append(token)
         return docs
 
-    def filter_tokens(dictionary):
+    def filter_tokens(self,dictionary):
         """ Filter out words that occur less than "no_below" documents, or more than "no_above" of the documents.
         Returns dictionary with filtered tokens"""
         no_below = 10
@@ -361,13 +361,13 @@ class LDAModel:
 
         return dictionary
 
-    def create_dict(docs):
+    def create_dict(self,docs):
         """ Create a dictionary representation of the documents."""
         # Create a dictionary representation of the documents.
         dictionary = Dictionary(docs)
         return dictionary
 
-    def create_corpus(docs):
+    def create_corpus(self,docs):
         """Returns a TF/IDF Weighted corpus"""
         # Create a dictionary representation of the documents.
         dictionary = Dictionary(docs)
