@@ -90,10 +90,16 @@ class LDAModel:
     def __init__(self):
         pass
 
-    def clusterByLDA(self, file_path, import_layer):
-        """ Clusters the message type using Latent Dirichlet Allocation"""
-        message = self.import_message(file_path, import_layer)
+    def clusterByLDA(self,num_topics, num_clusters, *args):
+        """ Clusters the message type using Latent Dirichlet Allocation
+        *args stands for the filepath that the message is imported from
+
+        Returns LDA Topic distribution
+        """
+        message = self.import_multiple_message(*args)
         msg_type = self.identify_msg_type(message)
+        print("\n" + "MSG Type : " + str(msg_type) + "\n")
+        true_dict = self.count_element(msg_type)
 
         # generate a text document of message (located in data.txt)
         self.write_message(message)
@@ -103,13 +109,16 @@ class LDAModel:
         dictionary = self.create_dict(docs)
         corpus = self.create_corpus(docs)
 
-        # Set training parameters.
-        num_topics = 8
+        # Set training parameters for LDA
+        num_topics = num_topics
         chunksize = 1  # how many documents are processed at a time
         passes = 30  # how often we train the model on the entire corpus.
-        iterations = 500
+        iterations = 1000
         eval_every = 1  # For logging
         minimum_probability = 0.0
+
+        # Set parameter for Kmeans
+        num_clusters = num_clusters
 
         # Make a index to word dictionary.
         temp = dictionary[0]  # initialize the dictionary
@@ -142,16 +151,13 @@ class LDAModel:
         #     minimum_probability=0.0,
         #     workers=1,
         # )
-        temp_file = datapath("model")
+        temp_file = datapath("model_lda")
         lda_model.save(temp_file)  # saving the model in "tempfile"
 
         top_topics = lda_model.top_topics(corpus)
         # Get topic distribution and forms a list
         topic_dist = [lda_model.get_document_topics(item, minimum_probability=0.0) for item in corpus]
 
-        # Average topic coherence is the sum of topic coherences of all topics, divided by the number of topics.
-        avg_topic_coherence = sum([t[1] for t in top_topics]) / num_topics
-        self.similarity_matrix(corpus, dictionary)
 
         # visualise_LDA(lda_model, corpus, dictionary)
 
@@ -159,12 +165,13 @@ class LDAModel:
         self.write_result(lda_model, avg_topic_coherence, topic_dist)
 
         # Clustering by Kmeans
-        clusters_result = self.clusterByKMeans(num_topics=num_topics, lda_model=lda_model, y_true=msg_type, docs=docs)
+        clusters_result = self.clusterByKMeans(num_topics=num_topics, num_clusters=num_clusters, lda_model=lda_model,
+                                          msg_type=msg_type, docs=docs, true_dict=true_dict)
 
         # Getting the Performance matrix (accuracy, confusion matrix, precision)
-        PerformanceMatrix.visualise_confusion(clusters_result=clusters_result)
+        acc = self.visualise_confusion(clusters_result=clusters_result)
 
-    def clusterByKMeans(self, num_topics, lda_model, y_true, docs):
+    def clusterByKMeans(self,num_topics, num_clusters, lda_model, msg_type, docs, true_dict):
         """ Clusters the output of LDA by Kmeans
         Returns y true and y predicted as well. And Kmeans visualisation."""
         corpus = self.create_corpus(docs)
@@ -178,37 +185,60 @@ class LDAModel:
             for i in range(0, num_topics):
                 row[entry_num][i] = row[entry_num][i][1]
 
+        print(len(X.index))
         # PCA first to reduce dimensionality for visualisation
         pca = PCA(n_components=2)
         PC = pca.fit_transform(X)
 
         # Applying Kmeans to get labels(cluster no)
-        num_clusters = 4
+        num_clusters = num_clusters  # need to write a function to find out the optimal numb of topics
         kmeans = KMeans(n_clusters=num_clusters, n_init=10).fit_predict(PC)
 
         # Dataframe with labels
         Y = pd.DataFrame()
-        Y["true_labels"] = y_true
+        Y["true_labels"] = msg_type
         cluster_predicted = kmeans.tolist()
+
+        print("cluster predicted" + str(len(cluster_predicted)))
+        print(cluster_predicted)
+        print("cluster predicted" + str(len(msg_type)))
+
         Y["pred_labels"] = cluster_predicted
         Y.groupby("pred_labels")
-        label_dict = {}
+        clustered_labels = {}
         for (i, row) in Y.iterrows():
-            if row["pred_labels"] in label_dict:
-                label_dict[row["pred_labels"]].append(row["true_labels"])
+            if row["pred_labels"] in clustered_labels:
+                clustered_labels[row["pred_labels"]].append(row["true_labels"])
             else:
-                label_dict[row["pred_labels"]] = [row["true_labels"]]
+                clustered_labels[row["pred_labels"]] = [row["true_labels"]]
 
         y_pred = []
-        for i in label_dict:
+        for i in clustered_labels:
             # Labelling the predicted cluster
-            maj = PerformanceMatrix.majority_element(label_dict[i])
-            cluster_maj = np.full((1, len(label_dict[i])), maj).tolist()[0]
+            pred_dict = PerformanceMatrix.count_element(clustered_labels[i])
+            maj = PerformanceMatrix.normalise_pred(clustered_labels[i], true_dict, pred_dict)
+            # maj = majority_element(clustered_labels[i])
+            cluster_maj = [maj for i in range(len(clustered_labels[i]))]
             # print(cluster_predicted)
             y_pred.extend(cluster_maj)  # Adding to the list of predicted labels for cluster
 
+        y_true = []
+        for i in clustered_labels:
+            y_true.extend(clustered_labels[i])
+
         # Plotting Kmeans
         # iterating through no of categories
+        print("clustered_labels")
+        print(clustered_labels)
+        print("\n")
+        print("y_true : ")
+        print(y_true)
+        print("\n")
+        print("y_pred: ")
+        print(y_pred)
+        print("\n")
+
+        fig, ax = plt.subplots()
         for i in np.unique(kmeans):
             plotx = []
             ploty = []
@@ -220,7 +250,12 @@ class LDAModel:
             # Plotting the graph
             plt.scatter(plotx, ploty, label=i)  # projected points to the axis
 
-        return (y_pred, y_true, np.unique(kmeans))
+        # plt.ylim([1e-7,1.5e-7])
+        # plt.xlim([-1e-6,1e-6])
+        ax.legend()
+        plt.show()
+
+        return (y_pred, y_true, np.unique(kmeans), num_topics)
 
     def tf_idf(self, corpus):
         """Using TF/IDF to vectorize the data
@@ -299,20 +334,6 @@ class LDAModel:
 
         datafile.close()
 
-    # def majority_element(self,arr):
-    #     """Returns the majority value in the array.
-    #     Implemented using Boyer–Moore majority vote algorithm"""
-    #
-    #     counter, possible_element = 0, None
-    #     for i in arr:
-    #         if counter == 0:
-    #             possible_element, counter = i, 1
-    #         elif i == possible_element:
-    #             counter += 1
-    #         else:
-    #             counter -= 1
-    #
-    #     return possible_element
 
     def parse_input(self, text):
         return text.strip("\n").strip(" ").strip("b")
@@ -331,7 +352,8 @@ class LDAModel:
         """ Breaking Messages into bytes
         Returns a list of Messages
         """
-        f = open("data.txt", "r")
+        f = open("/content/drive/My Drive/DSO Presentation/dataset/tcp_icmp_udp.txt", "r")
+        # f = open("/content/drive/My Drive/DSO Presentation/dataset/TCP_ICMP_UDP_HTTP.txt", "r")
         # print(sent_tokenize(text))
         text = f.readlines()
         doc = []
@@ -340,10 +362,24 @@ class LDAModel:
             if "\\x" in line:
                 line = self.parse_input(line)
                 tokenized_hex = self.tokenize_hex(line)
-                for hex in tokenized_hex:
-                    if self.is_hex(hex):
-                        parsed_hex.append(self.parse_hex(hex))
-                doc.append(parsed_hex)
+                for token in tokenized_hex:
+                    if self.is_hex(token):
+                        parsed_hex.append(self.parse_hex(token))
+
+                # limiting the header to 70 bytes
+                # doc.append(header_lim(parsed_hex))
+                doc.append((parsed_hex))
+
+            elif any(x in line for x in ["GET", "HTTP"]):
+                line = self.parse_input(line)
+                # tokenized_hex = tokenize_hex(line)
+                # tokenized_hex = tokenize_ascii(line)
+                for token in line:
+                    if self.is_hex(token):
+                        if not any(substring in token for substring in [" ", "'", "\r", "\n", "", "r", "n"]):
+                            parsed_hex.append(self.parse_hex(token))
+                doc.append(self.header_lim(parsed_hex))
+
         return doc
 
     def n_gram_message(self, docs):

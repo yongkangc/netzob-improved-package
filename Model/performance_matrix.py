@@ -237,17 +237,16 @@ class PerformanceMatrix:
         """
 
         fraction_array = []
-        for i in pred_dict:
+        for i in arr:
             if i in true_dict:
                 fraction = pred_dict[i] / true_dict[i]
                 fraction_array.append(fraction)
             else:
                 print("no similarities for {}".format(i))
+        print(fraction_array)
+        index, value = max(enumerate(fraction_array), key=operator.itemgetter(1))
 
-        max_fraction = max(fraction_array)
-        [i for i, value in enumerate(fraction_array) if value == max_fraction]
-
-        return i
+        return arr[index]
 
     @staticmethod
     def count_element(array):
