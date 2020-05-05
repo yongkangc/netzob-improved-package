@@ -61,7 +61,7 @@ class PacketBuffer(object):
 
     def get_buffer_as_string(self):
         "Returns the packet buffer as a string object"
-        return self.__bytes.tostring()
+        return self.__bytes.tobytes()
 
     def get_bytes(self):
         "Returns the packet buffer as an array"
@@ -98,7 +98,7 @@ class PacketBuffer(object):
             bytes = self.__bytes[index:]
         else:
             bytes = self.__bytes[index:index + 2]
-        (value, ) = struct.unpack(order + 'H', bytes.tostring())
+        (value, ) = struct.unpack(order + 'H', bytes.tobytes())
         return value
 
     def set_long(self, index, value, order='!'):
@@ -117,7 +117,7 @@ class PacketBuffer(object):
             bytes = self.__bytes[index:]
         else:
             bytes = self.__bytes[index:index + 4]
-        (value, ) = struct.unpack(order + 'L', bytes.tostring())
+        (value, ) = struct.unpack(order + 'L', bytes.tobytes())
         return value
 
     def set_long_long(self, index, value, order='!'):
@@ -136,7 +136,7 @@ class PacketBuffer(object):
             bytes = self.__bytes[index:]
         else:
             bytes = self.__bytes[index:index + 8]
-        (value, ) = struct.unpack(order + 'Q', bytes.tostring())
+        (value, ) = struct.unpack(order + 'Q', bytes.tobytes())
         return value
 
     def get_ip_address(self, index):
@@ -146,7 +146,7 @@ class PacketBuffer(object):
             bytes = self.__bytes[index:]
         else:
             bytes = self.__bytes[index:index + 4]
-        return socket.inet_ntoa(bytes.tostring())
+        return socket.inet_ntoa(bytes.tobytes())
 
     def set_ip_address(self, index, ip_string):
         "Set 4-byte value at 'index' from 'ip_string'"
@@ -728,7 +728,7 @@ class LinuxSLL(Header):
 
     def get_addr(self):
         "Returns the sender's address field"
-        return self.get_bytes()[6:14].tostring()
+        return self.get_bytes()[6:14].tobytes()
 
     def set_ether_type(self, aValue):
         "Set ethernet data type field to 'aValue'"
@@ -818,9 +818,9 @@ class IP(Header):
             self.set_ip_sum(self.compute_checksum(my_bytes))
 
         if child_data == None:
-            return my_bytes.tostring()
+            return my_bytes.tobytes()
         else:
-            return my_bytes.tostring() + child_data
+            return my_bytes.tobytes() + child_data
 
     #  def calculate_checksum(self, buffer = None):
     #      tmp_value = self.get_ip_sum()
@@ -1570,9 +1570,9 @@ class TCP(Header):
         data = self.get_data_as_string()
 
         if data:
-            return bytes.tostring() + data
+            return bytes.tobytes() + data
         else:
-            return bytes.tostring()
+            return bytes.tobytes()
 
     def load_header(self, aBuffer):
         self.set_bytes_from_string(aBuffer[:20])

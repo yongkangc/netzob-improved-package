@@ -43,14 +43,10 @@
 # | Local application imports                                                 |
 # +---------------------------------------------------------------------------+
 from netzob.all import *
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, accuracy_score
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import itertools
 from netzob.Model.performance_matrix import PerformanceMatrix
 
 from pprint import pprint
+import itertools
 
 # Data Analytics mods
 import numpy as np
@@ -58,6 +54,8 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, accuracy_score
+
 
 # NLP Modules
 import gensim
@@ -161,7 +159,6 @@ class LDAModel:
         self.write_result(lda_model, avg_topic_coherence, topic_dist)
 
         # Clustering by Kmeans
-        num_topics = 8  # need to write a function to find out the optimal numb of topics
         clusters_result = self.clusterByKMeans(num_topics=num_topics, lda_model=lda_model, y_true=msg_type, docs=docs)
 
         # Getting the Performance matrix (accuracy, confusion matrix, precision)
@@ -186,7 +183,8 @@ class LDAModel:
         PC = pca.fit_transform(X)
 
         # Applying Kmeans to get labels(cluster no)
-        kmeans = KMeans(n_clusters=num_topics, n_init=10).fit_predict(PC)
+        num_clusters = 4
+        kmeans = KMeans(n_clusters=num_clusters, n_init=10).fit_predict(PC)
 
         # Dataframe with labels
         Y = pd.DataFrame()
@@ -211,7 +209,6 @@ class LDAModel:
 
         # Plotting Kmeans
         # iterating through no of categories
-        print(np.unique(kmeans))
         for i in np.unique(kmeans):
             plotx = []
             ploty = []
@@ -261,7 +258,7 @@ class LDAModel:
         """Create a text document of the result"""
         with open("result4.txt", "w") as f:
             # pprint(topic_dist, stream=f)
-            print(topic_dist, file=f)
+            # print(topic_dist, file=f)
             print('Average topic coherence: %.4f.' % avg_topic_coherence, file=f)
 
     def load_lda(self):
@@ -273,11 +270,22 @@ class LDAModel:
 
         return lda_model
 
-    def import_message(self, file_path, importLayer):
+    def import_message(self,file_path,importLayer=4):
         """Abstracted function to import messages"""
-        from netzob.all import PCAPImporter
         message = PCAPImporter.readFile(file_path, importLayer=importLayer).values()
         return message
+
+    def import_multiple_message(self,importLayer=4, *args):
+        """Abstracted function to import multiple messages"""
+
+        for count, elem in enumerate(args):
+            message_single = PCAPImporter.readFile(elem, importLayer=importLayer).values()
+            if count < 1:
+                message_all = message_single
+            else:
+                message_all += message_single
+
+        return message_all
 
     def write_message(self, message):
         """Outputs the message in data.txt

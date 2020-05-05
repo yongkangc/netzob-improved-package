@@ -34,4 +34,6 @@ from . import release
 from netzob.Common.all import *
 from netzob.Inference.all import *
 from netzob.Import.all import *
-from netzob.Model.PerformanceMatrix import *
+from netzob.Model.performance_matrix import *
+from netzob.Model.lda_kmeans import *
+

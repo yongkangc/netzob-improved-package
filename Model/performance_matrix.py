@@ -43,12 +43,12 @@
 # | Local application imports                                                 |
 # +---------------------------------------------------------------------------+
 
-from netzob.all import *
 from sklearn.metrics import confusion_matrix, precision_score, precision_recall_fscore_support, accuracy_score
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import itertools
+from collections import Counter
 
 
 class PerformanceMatrix:
@@ -74,13 +74,17 @@ class PerformanceMatrix:
         
         Output : (cluster_predicted,cluster_true,msg_per_cluster)
         """
+        from netzob.all import Format
 
+        msg_type = PerformanceMatrix.identify_msg_type(message)
+        true_dict = PerformanceMatrix.count_element(msg_type)
         cluster = Format.clusterByAlignment(message)  # Output a list of Symbol Objects
         cluster_no = len(cluster)  # num of clusters
 
-        clusters_result = {}  # dictionary that contains the cluster, predicted and truth values
         cluster_predicted = []  # list of all the message type from the inital dataset
         cluster_true = []  # list of all the message type from the inital dataset
+
+
 
         msg_per_cluster = []  # list to store num of message for each cluster
         # finding num of messages for each cluster
@@ -92,29 +96,43 @@ class PerformanceMatrix:
         for index, symbol in enumerate(cluster):  # iterating through each cluster
             # finding the true labels for predicted cluster
             for cluster_msg in range(msg_per_cluster[index]):  # iterate through number of message in  each cluster
-                # print(cluster_msg + " " + symbol.messages[cluster_msg].l4MessageType)
-                # For ICMP 
+                # For ICMP
                 if symbol.messages[cluster_msg].l4Protocol == 'ICMP':
                     msg_protocol = 'ICMP'  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
-                    message_type = 'ICMP' + symbol.messages[cluster_msg].l4MessageType
-                    cluster_true.append(message_type)
+                    message_type = 'ICMP : ' + symbol.messages[cluster_msg].l4MessageType
+                    cluster_true.append(msg_protocol)
                 # For TCP
                 elif symbol.messages[cluster_msg].l4Protocol == 'TCP':
-                    message_type = symbol.messages[
-                        cluster_msg].l4MessageType  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
-                    cluster_true.append(message_type)
+                    if symbol.messages[cluster_msg].l4MessageType == "IRC":
+                        msg_protocol = "IRC"
+                    else:
+                        msg_protocol = 'TCP'
+                    # message_type = symbol.messages[
+                    #     cluster_msg].l4MessageType  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
+                    cluster_true.append(msg_protocol)
                     # For UDP
                 elif symbol.messages[cluster_msg].l4Protocol == 'UDP':
                     msg_protocol = 'UDP'
                     cluster_true.append(msg_protocol)
 
-            # Labelling the predicted cluster
-            cluster_majority = np.full((1, len(cluster[index].messages)), majority_element(cluster_true)).tolist()[
-                0]  # finding the majority type of message per cluster
-            # print(cluster_predicted)
-            cluster_predicted.extend(cluster_majority)  # Adding to the list of predicted labels for cluster
+            # Getting the total number of types in each cluster
+            pred_dict = PerformanceMatrix.count_element(cluster_true)
+            print("pred_dict {}".format(pred_dict))
+            print("true dict {}".format(true_dict))
 
-        return cluster_predicted, cluster_true, msg_per_cluster
+            # finding the majority type of message per cluster
+            # maj = PerformanceMatrix.majority_element(cluster_true)
+
+            # finding the majority type with normalization
+            maj = PerformanceMatrix.normalise_pred(cluster_true, true_dict,pred_dict)
+            cluster_majority = [maj for i in range(len(cluster[index].messages))]
+
+            print(cluster_majority)
+
+            # Adding to the list of predicted labels for all cluster
+            cluster_predicted.extend(cluster_majority)
+
+        PerformanceMatrix.visualise_confusion([cluster_predicted, cluster_true, msg_per_cluster])
 
     @staticmethod
     def visualise_confusion(clusters_result):
@@ -164,6 +182,33 @@ class PerformanceMatrix:
         plt.show()  # Plots the confusion matrix
 
     @staticmethod
+    def import_message(self,file_path,importLayer=4):
+        """Abstracted function to import messages"""
+        message = PCAPImporter.readFile(file_path, importLayer=importLayer).values()
+        return message
+
+    @staticmethod
+    def import_multiple_message(*args):
+        """Abstracted function to import multiple messages"""
+
+        for count, elem in enumerate(args):
+            if elem == "./test/resources/pcaps/test_import_http.pcap":
+                message_single = PCAPImporter.readFile(elem, importLayer=5).values()
+                if count < 1:
+                    message_all = message_single
+                else:
+                    message_all += message_single
+            else:
+                message_single = PCAPImporter.readFile(elem, importLayer=4).values()
+                if count < 1:
+                    message_all = message_single
+                else:
+                    message_all += message_single
+
+        return message_all
+
+
+    @staticmethod
     def majority_element(arr):
         """Returns the majority value in the array.
         Implemented using Boyer–Moore majority vote algorithm
@@ -184,5 +229,66 @@ class PerformanceMatrix:
                 counter -= 1
 
         return possible_element
+
+    @staticmethod
+    def normalise_pred(arr, true_dict, pred_dict):
+        """ Finding the weighted average of the message type
+        Returns the highest probability message type.
+        """
+
+        fraction_array = []
+        for i in pred_dict:
+            if i in true_dict:
+                fraction = pred_dict[i] / true_dict[i]
+                fraction_array.append(fraction)
+            else:
+                print("no similarities for {}".format(i))
+
+        max_fraction = max(fraction_array)
+        [i for i, value in enumerate(fraction_array) if value == max_fraction]
+
+        return i
+
+    @staticmethod
+    def count_element(array):
+        """Counts the unique message types in list
+         Returns Dictionary of type : times
+         """
+        unique_elements = list(Counter(array).keys())
+        element_frequency = list(Counter(array).values())
+
+        dict = {}
+
+        for index, key in enumerate(unique_elements):
+            dict[key] = element_frequency[index]
+
+        return dict
+
+    @staticmethod
+    def identify_msg_type(message):
+        """" Returns Message Protocol and corresponding Message type """
+        # symbol = Symbol(messages=message)
+
+        msg_type = []
+        for i in range(len(message)):
+
+            if message[i].l4Protocol == 'TCP':
+                # msg_protocol = str(message[i].l4MessageType)
+                if message[i].l4MessageType == "IRC":
+                    msg_protocol = "IRC"
+                else:
+                    msg_protocol = 'TCP'
+                    # msg_protocol = message[i].l4MessageType
+
+                msg_type.append(msg_protocol)
+            elif message[i].l4Protocol == 'ICMP':
+                msg_protocol = 'ICMP'  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
+                # msg_protocol = 'ICMP : ' + message[i].l4MessageType
+                msg_type.append(msg_protocol)
+            elif message[i].l4Protocol == 'UDP':
+                msg_protocol = 'UDP'
+                msg_type.append(msg_protocol)
+
+        return msg_type
 
 

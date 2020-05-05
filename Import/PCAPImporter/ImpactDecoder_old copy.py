@@ -148,7 +148,10 @@ class TCPDecoder(Decoder):
         self.set_decoded_protocol(t)
         off = t.get_header_size()
         self.data_decoder = DataDecoder()
-        packet = self.data_decoder.decode(aBuffer[off:])
+        if off <= 70:
+            packet = self.data_decoder.decode(aBuffer[off:])
+        else:
+            packet = self.data_decoder.decode(aBuffer[off:70])
         t.contains(packet)
         return t
 

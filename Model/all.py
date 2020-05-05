@@ -35,7 +35,7 @@ from netzob.Model.Vocabulary.Types.all import *
 from netzob.Simulator.all import *
 
 from netzob.Model.Protocol import Protocol
-from netzob.Model.performance_matrix import PerformanceMatrix
+# from netzob.Model.performance_matrix import PerformanceMatrix
 from netzob.Model.lda_kmeans import LDAModel
 
 
