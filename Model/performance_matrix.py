@@ -273,8 +273,8 @@ class PerformanceMatrix:
 
             if message[i].l4Protocol == 'TCP':
                 # msg_protocol = str(message[i].l4MessageType)
-                if message[i].l4MessageType == "IRC":
-                    msg_protocol = "IRC"
+                if message[i].l4MessageType == "HTTP":
+                    msg_protocol = "HTTP"
                 else:
                     msg_protocol = 'TCP'
                     # msg_protocol = message[i].l4MessageType

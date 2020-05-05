@@ -281,7 +281,7 @@ class PCAPImporter(object):
                  ipProtocolNum) = self.__decodeLayer3(etherType, l2Payload)
                 (l4Proto, l4SrcPort, l4DstPort,
                  l4Payload,l4MessageType) = self.__decodeLayer4NetworkTraffic(ipProtocolNum, l3Payload)
-                l5MessageType = "IRC"
+                l5MessageType = "HTTP"
                  
             except NetzobImportException as e:
                 self._logger.warn(
