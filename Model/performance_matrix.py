@@ -49,6 +49,7 @@ import pandas as pd
 import numpy as np
 import itertools
 from collections import Counter
+import operator
 
 
 class PerformanceMatrix:
@@ -82,55 +83,62 @@ class PerformanceMatrix:
         cluster_no = len(cluster)  # num of clusters
 
         cluster_predicted = []  # list of all the message type from the inital dataset
-        cluster_true = []  # list of all the message type from the inital dataset
-
-
+        cluster_true = []
 
         msg_per_cluster = []  # list to store num of message for each cluster
         # finding num of messages for each cluster
         for i in range(cluster_no):
             message_count = len(cluster[i].messages)
             msg_per_cluster.append(message_count)
+        print(msg_per_cluster)
 
         # Labelling the each cluster type by the majority message type 
         for index, symbol in enumerate(cluster):  # iterating through each cluster
+            cluster_message_type = []
             # finding the true labels for predicted cluster
-            for cluster_msg in range(msg_per_cluster[index]):  # iterate through number of message in  each cluster
-                # For ICMP
+            for cluster_msg in range(msg_per_cluster[index]):  # iterate through number of message in each cluster
+
                 if symbol.messages[cluster_msg].l4Protocol == 'ICMP':
-                    msg_protocol = 'ICMP'  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
+                    # message_type = 'ICMP'  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
                     message_type = 'ICMP : ' + symbol.messages[cluster_msg].l4MessageType
-                    cluster_true.append(msg_protocol)
-                # For TCP
+                    cluster_true.append(message_type)
+                    cluster_message_type.append(message_type)
+
                 elif symbol.messages[cluster_msg].l4Protocol == 'TCP':
-                    if symbol.messages[cluster_msg].l4MessageType == "IRC":
-                        msg_protocol = "IRC"
-                    else:
-                        msg_protocol = 'TCP'
+                    message_type = symbol.messages[
+                        cluster_msg].l4MessageType  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
+                    # if symbol.messages[cluster_msg].l4MessageType == "HTTP":
+                    #     msg_protocol = "HTTP"
+                    # else:
+                    #     message_type_ = 'TCP'
                     # message_type = symbol.messages[
                     #     cluster_msg].l4MessageType  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
-                    cluster_true.append(msg_protocol)
-                    # For UDP
+                    cluster_true.append(message_type)
+                    cluster_message_type.append(message_type)
+
                 elif symbol.messages[cluster_msg].l4Protocol == 'UDP':
                     msg_protocol = 'UDP'
                     cluster_true.append(msg_protocol)
+                    cluster_message_type.append(msg_protocol)
 
+            print(f"cluster true : {cluster_message_type}")
             # Getting the total number of types in each cluster
-            pred_dict = PerformanceMatrix.count_element(cluster_true)
+            pred_dict = PerformanceMatrix.count_element(cluster_message_type)
+            # finding the majority type with normalization
+            maj = PerformanceMatrix.normalise_pred(cluster_message_type, true_dict, pred_dict)
+            cluster_majority = [maj for i in range(len(cluster[index].messages))]
+            # Adding to the list of predicted labels for all cluster
+            print(f"cluster maj : {cluster}")
+            cluster_predicted.extend(cluster_majority)
+            print(f"cluster prediction : {cluster_predicted}")
+
             print("pred_dict {}".format(pred_dict))
             print("true dict {}".format(true_dict))
 
             # finding the majority type of message per cluster
             # maj = PerformanceMatrix.majority_element(cluster_true)
 
-            # finding the majority type with normalization
-            maj = PerformanceMatrix.normalise_pred(cluster_true, true_dict,pred_dict)
-            cluster_majority = [maj for i in range(len(cluster[index].messages))]
 
-            print(cluster_majority)
-
-            # Adding to the list of predicted labels for all cluster
-            cluster_predicted.extend(cluster_majority)
 
         PerformanceMatrix.visualise_confusion([cluster_predicted, cluster_true, msg_per_cluster])
 
@@ -141,6 +149,8 @@ class PerformanceMatrix:
         # Obtaining the turth and predicted labels from dictionary
         y_pred = clusters_result[0]
         y_true = clusters_result[1]
+        print(f"y pred : {y_pred}")
+        print(f"y true : {y_true}")
 
         # Finding the unique values in the truth. This will tell us number of unique clusters
         unique_types_true = np.unique(np.array(y_true))
@@ -243,7 +253,6 @@ class PerformanceMatrix:
                 fraction_array.append(fraction)
             else:
                 print("no similarities for {}".format(i))
-        print(fraction_array)
         index, value = max(enumerate(fraction_array), key=operator.itemgetter(1))
 
         return arr[index]
@@ -272,17 +281,17 @@ class PerformanceMatrix:
         for i in range(len(message)):
 
             if message[i].l4Protocol == 'TCP':
-                # msg_protocol = str(message[i].l4MessageType)
-                if message[i].l4MessageType == "HTTP":
-                    msg_protocol = "HTTP"
-                else:
-                    msg_protocol = 'TCP'
-                    # msg_protocol = message[i].l4MessageType
+                msg_protocol = str(message[i].l4MessageType)
+                # if message[i].l4MessageType == "HTTP":
+                #     msg_protocol = "HTTP"
+                # else:
+                #     msg_protocol = 'TCP'
+                #     # msg_protocol = message[i].l4MessageType
 
                 msg_type.append(msg_protocol)
             elif message[i].l4Protocol == 'ICMP':
-                msg_protocol = 'ICMP'  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
-                # msg_protocol = 'ICMP : ' + message[i].l4MessageType
+                # msg_protocol = 'ICMP'  # Set the L4 Protocol. Different protocol has different method of labelling the true cluster.
+                msg_protocol = 'ICMP : ' + message[i].l4MessageType
                 msg_type.append(msg_protocol)
             elif message[i].l4Protocol == 'UDP':
                 msg_protocol = 'UDP'
