@@ -35,15 +35,9 @@ About
 
 Improved Version of Netzob. Replace your python packages netzob with this.
 
-General Information
--------------------
 
-:Email: `contact@netzob.org <contact@netzob.org>`_
-:Mailing list: Two lists are available, use the `SYMPA web interface <https://lists.netzob.org/wws>`_ to register.
-:IRC: You can hang-out with us on Freenode's IRC channel #netzob @ freenode.org.
-:Twitter: Follow Netzob's official accounts (@Netzob)
 	  
-Helpfull Resources
+Helpful Resources
 ------------------
 
 **Backup of www.netzob.org**
@@ -60,20 +54,5 @@ Helpfull Resources
 * https://github.com/lnerit/Netzob-0.4.1/blob/master/protocolinferencetutorial.py  
 * https://github.com/elenambarbour/netzob/tree/master/Scripts (multiple tutorials and scripts)  
 
-Authors, Contributors and Sponsors
-==================================
-
-See the top distribution file ``AUTHORS.txt`` in each component for the detailed and updated list
-of their authors, contributors and sponsors.
 
 
-Extra
-=====
-
-.. figure:: https://raw.githubusercontent.com/netzob/netzob/next/netzob/doc/documentation/source/zoby.png
-   :width: 200 px
-   :alt: Zoby, the official mascot of Netzob
-   :align: center
-
-   Zoby, the official mascot of Netzob.
-	  
