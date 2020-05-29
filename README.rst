@@ -33,14 +33,7 @@ Improved Version of `Netzob <https://github.com/netzob/netzob>`_ : Protocol Reve
 About
 =====
 
-Welcome to the improved repository of Netzob.
-
-Netzob is a tool that can be used to **reverse engineer**, **model** and **fuzz** communication protocols. It is made of two components:
-
-* **netzob** a python project that exposes all the features of netzob (except GUI) you can import in your own tool or use in CLI,
-* **netzob_web** a graphical interface that leverages web technologies. 
- 
-Source codes, documentations and resources are available for each component, please visit their dedicated directories.
+Improved Version of Netzob. Replace your python packages netzob with this.
 
 General Information
 -------------------
