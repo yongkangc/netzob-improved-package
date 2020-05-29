@@ -33,7 +33,8 @@ Improved Version of `Netzob <https://github.com/netzob/netzob>`_ : Protocol Reve
 About
 =====
 
-Improved Version of Netzob. Replace your python packages netzob with this.
+Improved Version of Netzob. 
+# Replace your python packages netzob with this.
 
 
 	  
