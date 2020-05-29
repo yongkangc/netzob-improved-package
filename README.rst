@@ -30,11 +30,11 @@ Improved Version of `Netzob <https://github.com/netzob/netzob>`_ : Protocol Reve
     :target: https://webchat.freenode.net/?channels=#netzob
     :alt: IRC
     
-About
+Improved Version of Netzob. 
+Replace your python packages netzob with this.
 =====
 
-Improved Version of Netzob. 
-# Replace your python packages netzob with this.
+
 
 
 	  
