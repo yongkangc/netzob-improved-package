@@ -1,6 +1,6 @@
-===========================================================
-Improved Version of `Netzob <https://github.com/netzob/netzob>`_ : Protocol Reverse Engineering and Fuzzing
-===========================================================
+
+Improved Version of Netzob. Replace your python packages netzob with this.
+==================================================
 
 - Added ICMP Support
 - Added Confusion Matrix for evaluation
@@ -8,8 +8,6 @@ Improved Version of `Netzob <https://github.com/netzob/netzob>`_ : Protocol Reve
 
     
  
-Improved Version of Netzob. Replace your python packages netzob with this.
-==================================================
 
 
 
